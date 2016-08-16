@@ -217,7 +217,7 @@
         // generate csrf-token
         var state = Math.random(18).toString(36).replace(/\//g, '-').replace(/\+/g, '_');
         sessionStorage.setItem("state", state);
-        window.location = 'https://www.dropbox.com/1/oauth2/authorize?client_id=32vxbp259dqvhdi&response_type=token&state=' + state + '&redirect_uri=https%3A%2F%2F ########## config.html';
+        window.location = 'https://www.dropbox.com/1/oauth2/authorize?client_id=32vxbp259dqvhdi&response_type=token&state=' + state + '&redirect_uri=https%3A%2F%2Fj3re.github.io%2FPebbleTextreader%2Fconfig.html';
       };
 
       function setPath()
