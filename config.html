@@ -2,15 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, user-scalable=no"/>
 
     <style>
-
-      body {
+      body
+      {
         background-color: #2f2f2f;
       }
       
-      h1 {
+      h1
+      {
         font-family: Raleway, Helvetica;
         font-weight: 600;
         font-size: 16pt;
@@ -18,7 +19,8 @@
         color: #fff;
       }
 
-      h2 {
+      h2
+      {
         font-family: Raleway, Helvetica;
         font-weight: 400;
         font-size: 1.2rem;
@@ -26,14 +28,16 @@
         color: #fff;
       }
 
-      h3 {
+      h3
+      {
         font-family: Raleway, Helvetica;
         font-weight: 600;
         font-size: 14pt;
         color: #ccc;
       }
 
-      button {
+      button
+      {
         background-color: #ff4700;
         font-size: 1.2rem;
         line-height: 1.5rem;
@@ -44,26 +48,31 @@
         padding: .4rem;
       }
 
-      button:hover {
+      button:hover
+      {
         background: red;
       }
 
-      .box {
+      .box
+      {
         box-shadow: 0px 0px 15px #ff4700;
         padding: 15px 10px 0px;
         background-color: #484848;
       }
 
-      .box:nth-child(1) {
+      .box:nth-child(1)
+      {
         border-bottom: 3px solid #ff4700;
       }
 
-      .box table tr td {
+      .box table tr td
+      {
         border-top: 1px solid #ff4700;
         padding: 5px;
       }
 
-      .box table {
+      .box table
+      {
         width: 100%;
         text-align: center;
         margin-bottom: 10px;
@@ -110,7 +119,6 @@
     </div>
 
     <script>
-      var authorized = -1;
       
       function getToken()
       {
@@ -137,7 +145,6 @@
               }
               else
               {
-                authorized = 0;
                 console.log('There was an error processing the token.');
                 document.getElementById("status").innerHTML = "invalid token";
                 document.getElementById("status").style.color = "red";
@@ -148,7 +155,6 @@
         }
         else
         {
-          authorized = 0;
           console.log('no token!');
           document.getElementById("status").innerHTML = "no token";
           document.getElementById("status").style.color = "red";
@@ -165,14 +171,12 @@
         var info = JSON.parse(req.response);
         if(info.error)
         {
-          authorized = 0;
           console.log('checkToken, Authorization failed!');
           document.getElementById("status").innerHTML = "invalid token";
           document.getElementById("status").style.color = "red";
         }
         else
         {
-          authorized = 1;
           console.log('Hi ' + info.name_details.given_name + '!');
           document.getElementById("status").innerHTML = "valid token";
           document.getElementById("status").style.color = "green";
@@ -247,12 +251,15 @@
       }
 
       // Determine the correct return URL (emulator vs real watch)
-      function getQueryParam(variable, defaultValue) {
+      function getQueryParam(variable, defaultValue)
+      {
         var query = location.search.substring(1);
         var vars = query.split('&');
-        for (var i = 0; i < vars.length; i++) {
+        for (var i = 0; i < vars.length; i++)
+        {
           var pair = vars[i].split('=');
-          if (pair[0] === variable) {
+          if (pair[0] === variable)
+          {
             return decodeURIComponent(pair[1]);
           }
         }
@@ -262,7 +269,6 @@
       function deleteToken()
       {
         token = ' ';
-        authorized = 0;
         console.log('delete token!');
         document.getElementById("status").innerHTML = "deleted token";
         document.getElementById("status").style.color = "red";
