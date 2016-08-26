@@ -101,12 +101,14 @@
         </tr>
 
         <tr>
-        <td>
+        <td id="path_td" style="border-top: 0px;">
+        <div  id="path" style="display:none">
           <h2>select folder:</h2>
           <select id="select_path" name="path"></select>
+        </div>
         </td>
         </tr>
-      
+    
         <tr>
         <td>
         <br>
@@ -125,39 +127,15 @@
         if(params.access_token)
         {
           token = params.access_token;
-          
-          // And send the token over to the server
-          var req = new XMLHttpRequest();
-
-          // consider using POST so query isn't logged
-          req.open('GET', 'https://www.dropbox.com/1/oauth2/authorize', true);
-          req.setRequestHeader( "Authorization" , "Bearer " + token );
-          req.onreadystatechange = function (e)
-          {
-
-            if (req.readyState == 4)
-            {              
-              // check state
-              var state = sessionStorage.getItem("state");
-              if(params['state'] == state)
-              {  
-                checkToken();
-              }
-              else
-              {
-                console.log('There was an error processing the token.');
-                document.getElementById("status").innerHTML = "invalid token";
-                document.getElementById("status").style.color = "red";
-              }
-            }
-          }
-          req.send(null);
+          checkToken();
         }
         else
         {
           console.log('no token!');
           document.getElementById("status").innerHTML = "no token";
           document.getElementById("status").style.color = "red";
+          document.getElementById("path").style.display = 'none';
+          document.getElementById("path_td").style.borderTop = "0px";
         }
 
       }
@@ -165,52 +143,86 @@
       function checkToken()
       {
         var req = new XMLHttpRequest();
-        req.open("GET", 'https://api.dropbox.com/1/account/info', false);
+        req.open("POST", 'https://api.dropbox.com/2/users/get_current_account', true);
         req.setRequestHeader( "Authorization" , "Bearer " + token );
-        req.send(null);
-        var info = JSON.parse(req.response);
-        if(info.error)
+        req.addEventListener('load', function(event)
         {
-          console.log('checkToken, Authorization failed!');
-          document.getElementById("status").innerHTML = "invalid token";
-          document.getElementById("status").style.color = "red";
-        }
-        else
-        {
-          console.log('Hi ' + info.name_details.given_name + '!');
-          document.getElementById("status").innerHTML = "valid token";
-          document.getElementById("status").style.color = "green";
-
-          req = new XMLHttpRequest();
-          req.open("GET", 'https://api.dropboxapi.com/1/metadata/auto', false);
-          req.setRequestHeader( "Authorization" , "Bearer " + token );
-          req.send(null);
-          metadata = JSON.parse(req.response);
-
-          var select = document.getElementById("select_path");
-          var options = [];
-          var option = document.createElement('option');
-          option.text = option.value = '/';
-          options.push(option.outerHTML);
-
-          if(metadata.contents && metadata.contents.length)
+          if (req.status >= 200 && req.status < 300)
           {
-            for (var i = 0; i < metadata.contents.length; i++)
+            console.log(req.response);
+            var info = JSON.parse(req.response);
+            if(info.error)
             {
-              if(metadata.contents[i].is_dir)
-              {
-                option.text = option.value = metadata.contents[i].path;
-                options.push(option.outerHTML);
+              console.log('checkToken, Authorization failed!');
+              document.getElementById("status").innerHTML = "invalid token";
+              document.getElementById("status").style.color = "red";
+              document.getElementById("path").style.display = 'none';
+              document.getElementById("path_td").style.borderTop = "0px";
+            }
+            else
+            {
+              console.log('Hi ' + info.name.given_name + '!');
+              document.getElementById("status").innerHTML = "valid token";
+              document.getElementById("status").style.color = "green";
+              document.getElementById("path_td").style.borderTop = "1px solid #ff4700";
+              document.getElementById("path").style.display = 'inline-block';
 
-              }
+              req = new XMLHttpRequest();
+              req.open("POST", 'https://api.dropboxapi.com/2/files/list_folder', true);
+              req.setRequestHeader( "Authorization" , "Bearer " + token );
+              req.setRequestHeader('Content-Type', 'application/json');
+              req.addEventListener('load', function(event)
+              {
+                if (req.status >= 200 && req.status < 300)
+                {
+                  console.log(req.response);
+                  metadata = JSON.parse(req.response);
+
+                  var select = document.getElementById("select_path");
+                  var options = [];
+                  var option = document.createElement('option');
+                  option.text = option.value = '/';
+                  options.push(option.outerHTML);
+
+                  if(metadata.entries)
+                  {
+                    for (var i = 0; metadata.entries[i]; i++)
+                    {
+                      if(metadata.entries[i][".tag"] == 'folder')
+                      {
+                        option.text = option.value = metadata.entries[i].path_display;
+                        options.push(option.outerHTML);
+                      }
+                    }
+                  }
+                  select.insertAdjacentHTML('beforeEnd', options.join('\n'));
+                  if(path)
+                  {
+                    document.getElementById("select_path").value = path;
+                  }
+                  
+                }
+                else
+                {
+                  console.warn(req.statusText, req.responseText);
+                }
+              });
+
+              var parameters = 
+              {
+                "path": ""
+              };
+              req.send(JSON.stringify(parameters));
+                
             }
           }
-          select.insertAdjacentHTML('beforeEnd', options.join('\n'));
-          if(path)
+          else
           {
-            document.getElementById("select_path").value = path;
+            console.warn(req.statusText, req.responseText);
           }
-        }
+        });
+        req.send(null);
+        
       }
    
       function redirect()
@@ -218,9 +230,6 @@
         token = null;
         console.log('redirect to dropbox.com!');
 
-        // generate csrf-token
-        var state = Math.random(18).toString(36).replace(/\//g, '-').replace(/\+/g, '_');
-        sessionStorage.setItem("state", state);
         window.location = 'https://www.dropbox.com/1/oauth2/authorize?client_id=32vxbp259dqvhdi&response_type=token&state=' + state + '&redirect_uri=https%3A%2F%2Fj3re.github.io%2FPebbleTextreader%2Fconfig.html';
       };
 
@@ -268,10 +277,19 @@
 
       function deleteToken()
       {
+
+        req = new XMLHttpRequest();
+        req.open("POST", 'https://api.dropboxapi.com/2/auth/token/revoke', true);
+        req.setRequestHeader( "Authorization" , "Bearer " + token );
+        req.send(null);
+
+        
         token = ' ';
         console.log('delete token!');
         document.getElementById("status").innerHTML = "deleted token";
         document.getElementById("status").style.color = "red";
+        document.getElementById("path").style.display = 'none';
+        document.getElementById("path_td").style.borderTop = "0px";
       }
 
       var params = {}, queryString = location.hash.substring(1), regex = /([^&=]+)=([^&]*)/g, m;
