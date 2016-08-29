@@ -205,6 +205,10 @@
                 else
                 {
                   console.warn(req.statusText, req.responseText);
+                  document.getElementById("status").innerHTML = "invalid token";
+                  document.getElementById("status").style.color = "red";
+                  document.getElementById("path").style.display = 'none';
+                  document.getElementById("path_td").style.borderTop = "0px";
                 }
               });
 
@@ -219,6 +223,10 @@
           else
           {
             console.warn(req.statusText, req.responseText);
+            document.getElementById("status").innerHTML = "invalid token";
+            document.getElementById("status").style.color = "red";
+            document.getElementById("path").style.display = 'none';
+            document.getElementById("path_td").style.borderTop = "0px";
           }
         });
         req.send(null);
